@@ -43,60 +43,98 @@
 
 #Based on the tutor
 
-from tkinter import *
+
 
 import pandas.core.tools.datetimes
 
-BACKGROUND_COLOR = "#B1DDC6"
-
-############ Task 2 - Unguided #############################
-
-import random
-import pandas as pd
-
-word_list = pd.read_csv("data/french_words.csv")
-word_dict = pandas.DataFrame.to_dict(word_list)
-# print(word_dict)
 
 
-def get_french_word():
-    index = random.randint(0,99)
-    global word_dict
-    word = word_dict["French"][index]
-    # print(word)
-    canvas.create_text(400, 263, text=word, font=("Arial", 60, "bold"))
-
+# ############ Task 2 - Unguided #############################
+#
+# import random
+# import pandas as pd
+#
+# word_list = pd.read_csv("data/french_words.csv")
+# word_dict = pandas.DataFrame.to_dict(word_list)
+# # print(word_dict)
+#
+#
+# def get_french_word():
+#     index = random.randint(0,99)
+#     global word_dict
+#     word = word_dict["French"][index]
+#     # print(word)
+#     canvas.create_text(400, 263, text=word, font=("Arial", 60, "bold"))
+#################### End #################################
 
 # ---------------GENERATE INTERFACE ---------------- #
+
+############ 2nd Task - Guided ##############################
+
+from tkinter import *
+import pandas
+import random
+from time import time
+
+BACKGROUND_COLOR = "#B1DDC6"
+current_card = {}
+
+data = pandas.read_csv("data/french_words.csv")
+to_learn = data.to_dict(orient="records")
+# print(to_learn)
+# print(to_learn[2]) # The syntax to get key value pair
+
+
+def next_card():
+    global current_card, flip_timer
+    window.after_cancel(flip_timer)
+    current_card = random.choice(to_learn)
+    # print(current_card["French"])
+    canvas.itemconfig(card_title,text="French",fill="black")
+    canvas.itemconfig(card_word,text=current_card["French"],fill="black")
+    canvas.itemconfig(card_background,image=card_front_img)
+
+    flip_timer = window.after(3000, func=flip_card)
+
+    # canvas.itemconfig(card_background, image=card_front_img)  # This part did not work. Goes straight to back image.
+    # canvas.after((3000))
+    # canvas.itemconfig(card_background, image=card_back_img)
+
+def flip_card():
+    canvas.itemconfig(card_title,text="English",fill="white")
+    canvas.itemconfig(card_word,text=current_card["English"],fill="white")
+    canvas.itemconfig(card_background,image=card_back_img)
 
 window = Tk()
 window.title("Flashy")
 window.config(padx=50,pady=50,bg=BACKGROUND_COLOR)
 
+flip_timer = window.after(3000, func=flip_card)
+
 canvas = Canvas(width=800,height=526)
 card_front_img = PhotoImage(file="images/card_front.png")
-canvas.create_image(400,263,image=card_front_img)
+card_background = canvas.create_image(400,263,image=card_front_img)
 
-canvas.create_text(400,150,text="Title",font=("Arial",40,"italic"))
-# canvas.create_text(400,263,text="word",font=("Arial",60,"bold")) #Moved to the function
-get_french_word()
+card_back_img = PhotoImage(file="images/card_back.png")
 
+
+card_title = canvas.create_text(400,150,text="Title",font=("Arial",40,"italic"))
+card_word = canvas.create_text(400,263,text="word",font=("Arial",60,"bold"))
 
 canvas.config(bg=BACKGROUND_COLOR,highlightthickness=0)
 canvas.grid(row=0,column=0,columnspan=2)
 
 cross_image = PhotoImage(file="images/wrong.png")
-unknown_button = Button(image=cross_image,highlightthickness=0,command=get_french_word)
+unknown_button = Button(image=cross_image,highlightthickness=0,command=next_card)
 unknown_button.grid(row=1,column=0)
 
 check_image = PhotoImage(file="images/right.png")
-known_button = Button(image=check_image,highlightthickness=0,command=get_french_word)
+known_button = Button(image=check_image,highlightthickness=0,command=next_card)
 known_button.grid(row=1,column=1)
 
 
 
 
-
-get_french_word()
+#next_card()
 
 window.mainloop()
