@@ -78,9 +78,21 @@ from time import time
 
 BACKGROUND_COLOR = "#B1DDC6"
 current_card = {}
+to_learn = {}
 
-data = pandas.read_csv("data/french_words.csv")
-to_learn = data.to_dict(orient="records")
+try:
+    data = pandas.read_csv("data/words_to_learn.csv.csv")
+except FileNotFoundError:
+    original_date = pandas.read_csv("data/french_words.csv")
+    to_learn = original_date.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
+
+
+####################
+## PROBLEM - To learn list keep resetting to the full list
+###################
+
 # print(to_learn)
 # print(to_learn[2]) # The syntax to get key value pair
 
@@ -104,6 +116,12 @@ def flip_card():
     canvas.itemconfig(card_title,text="English",fill="white")
     canvas.itemconfig(card_word,text=current_card["English"],fill="white")
     canvas.itemconfig(card_background,image=card_back_img)
+
+def is_known():
+    to_learn.remove(current_card)           # Removes the card from the full list
+    data = pandas.DataFrame(to_learn)       # Converts the full list minus the currnet card in to a data frame
+    data.to_csv("data/words_to_learn.csv", index=False)       # Creates this csv with the current full list
+    next_card()
 
 window = Tk()
 window.title("Flashy")
@@ -129,12 +147,9 @@ unknown_button = Button(image=cross_image,highlightthickness=0,command=next_card
 unknown_button.grid(row=1,column=0)
 
 check_image = PhotoImage(file="images/right.png")
-known_button = Button(image=check_image,highlightthickness=0,command=next_card)
+known_button = Button(image=check_image,highlightthickness=0,command=is_known)
 known_button.grid(row=1,column=1)
 
-
-
-
-#next_card()
+next_card()
 
 window.mainloop()
